@@ -36,8 +36,7 @@ address. If `/tmp/dev.log` shows a different one, use that.
 
 ## Signing in as a user
 
-Pages behind the app layout answer 401 until a user is in the session. The
-seed gives fixed IDs: `1` is an admin, `2` an instructor, `5` a student. Sign
+Pages behind the app layout answer 401 until a user is in the session. Sign
 in with one request, then open the page:
 
 ```bash
@@ -45,6 +44,17 @@ agent-browser open http://localhost:5173/
 agent-browser eval "fetch('/api/switch-user', {method: 'POST', body: new URLSearchParams({userId: '5'})}).then(r => r.status)"
 agent-browser open http://localhost:5173/dashboard
 ```
+
+`npm run db:seed` on a fresh database gives these ids:
+
+| id  | User             | Who                                                      |
+| --- | ---------------- | -------------------------------------------------------- |
+| 1   | Alex Rivera      | Admin                                                    |
+| 2   | Sarah Chen       | Instructor                                               |
+| 5   | Emma Wilson      | Student, enrolled in `introduction-to-typescript`        |
+| 10  | Bossy McBossface | Student with no enrollments: the locked view of a lesson |
+
+`scripts/seed.ts` has the rest.
 
 ## Judging how it looks
 

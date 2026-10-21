@@ -7,31 +7,51 @@ Review it with the code-review skill, .agents/skills/code-review/SKILL.md:
 - spec: /tmp/review-spec.md
 - standards: CODING_STANDARDS.md
 
-Leave the human reviewer as little as possible. Fix every finding you can on
-`{{BRANCH}}`, and commit each fix through the pre-commit hook. The workflow
-pushes your commits. Leave `.github/` untouched.
+A split that `scripts/check-file-tokens.js` forced is in scope for any
+ticket: tell both axes so. Check moved code with
+`git diff --color-moved=plain --color-moved-ws=allow-indentation-change origin/{{BASE_REF}}...HEAD`,
+which shows any line that changed on the way.
 
-Every finding you leave unfixed becomes an inline comment on its file and
-line. You will be asked for them as structured output.
+## Fix everything a person does not have to decide
+
+The human reviewer gets **decisions** only: product behaviour the ticket
+leaves open, or a trade-off between two documented rules. Everything else you
+fix on `{{BRANCH}}`, however large: deepening a module, taking `db` as a
+parameter, writing the tests a module lacks, extracting a shared component,
+splitting a function off a lint exemption list. A fix is done when
+`npm run check` passes and the hook accepts its commit. Commit each fix on
+its own. The workflow pushes your commits. Leave `.github/` untouched.
+
+Every finding you leave becomes an inline comment on the first line it
+concerns, one comment per finding. You will be asked for them as structured
+output. Its body says what decision it needs.
+
+## The verdict
 
 Write your verdict on the branch, after your fixes, to /tmp/review-verdict.md:
 
     ## Standards: PASS | CHANGES REQUESTED
-    One line of reasoning, then the findings, worst first: each one fixed
-    (its commit) or left (its file and line), citing the rule by heading.
+    One line of reasoning, then each finding you fixed, worst first: its
+    commit, citing the rule by heading.
 
     ## Spec: PASS | CHANGES REQUESTED
-    One line of reasoning, then the findings, fixed or left. For a change
-    that shows in the UI, end with a **Feel:** line: does the screenshot
-    evoke what the ticket's words describe?
+    One line of reasoning, then each finding you fixed. For a change that
+    shows in the UI, end with a **Feel:** line: does the screenshot evoke
+    what the ticket's words describe?
 
     ## Rules this review wanted and could not find
     Anything you wanted to fail the change for that no standard covers.
     The retro reads this list.
 
-When the change shows in the UI, save screenshots as PNGs in /tmp/evidence/,
-and judge them as "Judging how it looks" in docs/agents/agent-browser.md
-describes. A look that falls short of the ticket's words is a Spec finding:
-fix it like any other.
-Reference each in the verdict by its absolute path, e.g.
+The workflow adds the findings you left to each section, from your structured
+output. They appear there once, not in your text.
+
+## Evidence
+
+When the change shows in the UI, save an after screenshot as a PNG in
+/tmp/evidence/, and one for each of your fixes that changes it. Its before is
+already in the PR body. Judge them as "Judging how it looks" in
+docs/agents/agent-browser.md describes. A look that falls short of the
+ticket's words is a Spec finding: fix it like any other. Reference each
+screenshot in the verdict by its absolute path, e.g.
 `![after](/tmp/evidence/after.png)`. The workflow uploads them.
