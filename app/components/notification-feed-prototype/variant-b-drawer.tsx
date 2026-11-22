@@ -9,6 +9,8 @@ import { cn } from "~/lib/utils";
 import {
   CATEGORY_META,
   categoryOf,
+  categoryKeyOf,
+  type CategoryKey,
   timeAgo,
   useNotificationFeed,
   type Notification,
@@ -17,7 +19,7 @@ import {
 
 export const name = "Nav item + drawer";
 
-type Filter = "all" | NotificationData["category"];
+type Filter = "all" | CategoryKey;
 
 export function VariantBNavItem() {
   const { metadata } = useNotificationFeed();
@@ -47,7 +49,7 @@ function Drawer({ onClose }: { onClose: () => void }) {
   const [filter, setFilter] = useState<Filter>("all");
   const navigate = useNavigate();
 
-  const visible = items.filter((i) => filter === "all" || i.data?.category === filter);
+  const visible = items.filter((i) => filter === "all" || categoryKeyOf(i) === filter);
   const startOfToday = new Date();
   startOfToday.setHours(0, 0, 0, 0);
   const today = visible.filter((i) => new Date(i.inserted_at) >= startOfToday);

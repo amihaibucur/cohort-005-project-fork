@@ -12,8 +12,15 @@ import {
   useNotificationFeed,
   type Notification,
 } from "./feed-context";
+import { RatingsOptIn } from "./ratings-opt-in";
 
 export const name = "Bell + popover";
+
+// Knock's actor when the trigger passed one (real Reply), else the catalogue's fake name.
+function actorName(item: Notification) {
+  const actor = item.actors?.[0];
+  return (actor && "name" in actor && actor.name) || item.data?.actorName || "?";
+}
 
 export function VariantABell() {
   const { feed, items, metadata } = useNotificationFeed();
@@ -94,7 +101,7 @@ export function VariantABell() {
                 >
                   <div className="relative shrink-0">
                     <div className="flex size-9 items-center justify-center rounded-full bg-muted text-xs font-semibold">
-                      {initials(item.data?.actorName ?? "?")}
+                      {initials(actorName(item))}
                     </div>
                     <div
                       className={cn(
@@ -121,6 +128,7 @@ export function VariantABell() {
               );
             })}
           </div>
+          <RatingsOptIn />
         </div>
       )}
     </div>

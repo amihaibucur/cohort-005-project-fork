@@ -58,4 +58,5 @@ export default [
   route("api/set-dev-country", "routes/api.set-dev-country.ts"),
   // PROTOTYPE — sends the Notification catalogue through Knock
   route("api/prototype-notifications", "routes/api.prototype-notifications.ts"),
+  route("api/prototype-feed-token", "routes/api.prototype-feed-token.ts"),
 ] satisfies RouteConfig;

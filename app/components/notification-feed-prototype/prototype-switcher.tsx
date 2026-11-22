@@ -1,5 +1,5 @@
 // PROTOTYPE — floating variant switcher + "send the catalogue" button. Dev only.
-import { ChevronLeft, ChevronRight, Send } from "lucide-react";
+import { ChevronLeft, ChevronRight, MessageSquareReply, Send, ShieldCheck } from "lucide-react";
 import { useEffect } from "react";
 import { useFetcher, useNavigate, useSearchParams, useLocation } from "react-router";
 import { toast } from "sonner";
@@ -34,7 +34,7 @@ export function PrototypeSwitcher() {
   const navigate = useNavigate();
   const location = useLocation();
   const [params] = useSearchParams();
-  const fetcher = useFetcher<{ ok: boolean; count?: number; error?: string }>();
+  const fetcher = useFetcher<{ ok: boolean; message: string }>();
 
   function go(delta: number) {
     const next = KEYS[(KEYS.indexOf(current) + delta + KEYS.length) % KEYS.length];
@@ -56,8 +56,8 @@ export function PrototypeSwitcher() {
 
   useEffect(() => {
     if (fetcher.state !== "idle" || !fetcher.data) return;
-    if (fetcher.data.ok) toast.success(`Triggered ${fetcher.data.count} Notifications in Knock`);
-    else toast.error(fetcher.data.error ?? "Seeding failed");
+    if (fetcher.data.ok) toast.success(fetcher.data.message, { duration: 8000 });
+    else toast.error(fetcher.data.message, { duration: 8000 });
   }, [fetcher.state, fetcher.data]);
 
   if (!import.meta.env.DEV) return null;
@@ -74,15 +74,26 @@ export function PrototypeSwitcher() {
         <ChevronRight className="size-4" />
       </button>
       <span className="mx-1 h-4 w-px bg-white/30" />
-      <fetcher.Form method="post" action="/api/prototype-notifications">
-        <button
-          disabled={fetcher.state !== "idle"}
-          className="flex items-center gap-1 rounded-full px-2 py-1 hover:bg-white/20 disabled:opacity-50"
-          title="Trigger the 7 catalogue Notifications for the current user"
-        >
-          <Send className="size-3.5" />
-          {fetcher.state !== "idle" ? "Sending…" : "Send catalogue"}
-        </button>
+      <fetcher.Form method="post" action="/api/prototype-notifications" className="flex">
+        {(
+          [
+            ["catalogue", Send, "Send catalogue", "Trigger the 7 catalogue Notifications for the current user"],
+            ["real-reply", MessageSquareReply, "Real Reply", "Reply as the current user to someone else's newest Question; notifies its author"],
+            ["cross-user-check", ShieldCheck, "403 check", "Use my signed token on someone else's feed; Knock must refuse"],
+          ] as const
+        ).map(([intent, Icon, label, title]) => (
+          <button
+            key={intent}
+            name="intent"
+            value={intent}
+            disabled={fetcher.state !== "idle"}
+            className="flex items-center gap-1 rounded-full px-2 py-1 hover:bg-white/20 disabled:opacity-50"
+            title={title}
+          >
+            <Icon className="size-3.5" />
+            {fetcher.state !== "idle" && fetcher.formData?.get("intent") === intent ? "…" : label}
+          </button>
+        ))}
       </fetcher.Form>
     </div>
   );

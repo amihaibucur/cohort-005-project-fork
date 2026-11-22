@@ -16,9 +16,10 @@ export interface FeedAuth {
   channelId: string;
 }
 
+export type CategoryKey = "refunds" | "discussion" | "team" | "ratings";
+
 export interface NotificationData {
   kind: string;
-  category: "refunds" | "discussion" | "team" | "ratings";
   actorName: string;
   title: string;
   body: string;
@@ -29,6 +30,9 @@ export interface NotificationData {
 export type Notification = FeedItem<NotificationData>;
 
 const FeedContext = createContext<Feed | null>(null);
+const KnockContext = createContext<Knock | null>(null);
+
+export const useKnockClient = () => useContext(KnockContext);
 
 export function NotificationFeedProvider({
   auth,
@@ -38,11 +42,24 @@ export function NotificationFeedProvider({
   children: React.ReactNode;
 }) {
   const [feed, setFeed] = useState<Feed | null>(null);
+  const [knockClient, setKnockClient] = useState<Knock | null>(null);
 
+  // Keyed on the user, not the token: every loader run signs a fresh token, and
+  // re-initialising the feed on each navigation would drop the socket.
+  // Before the short-lived token expires, ask Cadence for a new one.
   useEffect(() => {
     if (!auth) return;
     const knock = new Knock(auth.publicKey);
-    knock.authenticate(auth.userId, auth.token);
+    knock.authenticate(auth.userId, auth.token, {
+      timeBeforeExpirationInMs: 60_000,
+      onUserTokenExpiring: async () => {
+        const res = await fetch("/api/prototype-feed-token");
+        if (!res.ok) return;
+        const { token } = (await res.json()) as { token: string };
+        console.info("[PROTOTYPE] Knock user token refreshed");
+        return token;
+      },
+    });
     const f = knock.feeds.initialize(auth.channelId, {
       archived: "exclude",
       page_size: 50,
@@ -50,14 +67,20 @@ export function NotificationFeedProvider({
     f.listenForUpdates();
     f.fetch();
     setFeed(f);
+    setKnockClient(knock);
     return () => {
       f.dispose();
       knock.teardown();
       setFeed(null);
+      setKnockClient(null);
     };
-  }, [auth?.userId, auth?.token]);
+  }, [auth?.userId]);
 
-  return <FeedContext.Provider value={feed}>{children}</FeedContext.Provider>;
+  return (
+    <KnockContext.Provider value={knockClient}>
+      <FeedContext.Provider value={feed}>{children}</FeedContext.Provider>
+    </KnockContext.Provider>
+  );
 }
 
 const EMPTY: { items: Notification[]; metadata: FeedMetadata; loading: boolean } = {
@@ -88,8 +111,14 @@ export const CATEGORY_META = {
   ratings: { label: "Ratings", Icon: Star, tone: "text-rose-600 bg-rose-100 dark:bg-rose-950 dark:text-rose-400" },
 } as const;
 
+// The category comes from the Knock workflow (source.categories), not the trigger data.
+export function categoryKeyOf(item: Notification): CategoryKey {
+  const key = item.source?.categories?.find((c): c is CategoryKey => c in CATEGORY_META);
+  return key ?? "discussion";
+}
+
 export function categoryOf(item: Notification) {
-  return CATEGORY_META[item.data?.category ?? "discussion"] ?? CATEGORY_META.discussion;
+  return CATEGORY_META[categoryKeyOf(item)];
 }
 
 export function timeAgo(iso: string) {
