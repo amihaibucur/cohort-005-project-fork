@@ -136,7 +136,10 @@ export async function seedCatalogue(user: { id: number; name: string }) {
 // Real data, like the spike's check 2: the current user replies to the newest
 // Question someone else asked, and the Question's author is notified. Never
 // the current user, so "nobody is notified about their own action" holds.
-export async function sendRealReply(me: { id: number; name: string; email: string }) {
+export async function sendRealReply(
+  me: { id: number; name: string; email: string },
+  questionId?: number
+) {
   const q = db
     .select({
       id: comments.id,
@@ -153,7 +156,14 @@ export async function sendRealReply(me: { id: number; name: string; email: strin
     .innerJoin(lessons, eq(lessons.id, comments.lessonId))
     .innerJoin(modules, eq(modules.id, lessons.moduleId))
     .innerJoin(courses, eq(courses.id, modules.courseId))
-    .where(and(isNull(comments.parentId), isNull(comments.deletedAt), ne(comments.userId, me.id)))
+    .where(
+      and(
+        isNull(comments.parentId),
+        isNull(comments.deletedAt),
+        ne(comments.userId, me.id),
+        questionId ? eq(comments.id, questionId) : undefined
+      )
+    )
     .orderBy(desc(comments.createdAt))
     .get();
   if (!q) throw new Error("No Question by another user to reply to");
@@ -192,4 +202,80 @@ export async function crossUserCheck(me: { id: number }) {
       )
     ).status;
   return { own: await probe(me.id), other: await probe(other.id), otherName: other.name };
+}
+
+// ── /prototype/knock debug page ────────────────────────────────────────────
+
+export const knockUserId = (cadenceUserId: number) => String(cadenceUserId);
+
+// Questions someone else asked (so "I" can reply) and courses someone else
+// teaches (so "I" can rate), mirroring the spike's real-data triggers.
+export function listTriggerTargets(me: { id: number }) {
+  const questions = db
+    .select({
+      id: comments.id,
+      body: comments.body,
+      authorName: users.name,
+      lessonTitle: lessons.title,
+    })
+    .from(comments)
+    .innerJoin(users, eq(users.id, comments.userId))
+    .innerJoin(lessons, eq(lessons.id, comments.lessonId))
+    .where(and(isNull(comments.parentId), isNull(comments.deletedAt), ne(comments.userId, me.id)))
+    .orderBy(desc(comments.createdAt))
+    .limit(5)
+    .all();
+  const courseList = db
+    .select({ id: courses.id, title: courses.title, instructorName: users.name })
+    .from(courses)
+    .innerJoin(users, eq(users.id, courses.instructorId))
+    .where(ne(courses.instructorId, me.id))
+    .limit(5)
+    .all();
+  return { questions, courseList };
+}
+
+export async function sendRating(me: { id: number; name: string; email: string }, courseId: number) {
+  const c = db
+    .select({ id: courses.id, title: courses.title, instructor: users })
+    .from(courses)
+    .innerJoin(users, eq(users.id, courses.instructorId))
+    .where(eq(courses.id, courseId))
+    .get();
+  if (!c) throw new Error(`Course ${courseId} not found`);
+  if (c.instructor.id === me.id) throw new Error("You can't rate your own course");
+  const result = await knockClient().workflows.trigger(workflowFor("ratings"), {
+    recipients: [{ id: knockUserId(c.instructor.id), name: c.instructor.name, email: c.instructor.email }],
+    actor: { id: knockUserId(me.id), name: me.name, email: me.email },
+    data: {
+      kind: "first-rating",
+      actorName: me.name,
+      title: `${me.name} rated ${c.title} 5★`,
+      body: "PROTOTYPE rating from /prototype/knock.",
+      url: `/instructor/${c.id}`,
+      cta: "View course",
+    },
+  });
+  return { recipientId: c.instructor.id, recipientName: c.instructor.name, result };
+}
+
+export async function getServerPreferences(userId: number) {
+  try {
+    return await knockClient().users.getPreferences(knockUserId(userId), "default");
+  } catch (e) {
+    return { error: String(e) };
+  }
+}
+
+export async function setRatingsPreference(userId: number, on: boolean | null) {
+  const knock = knockClient();
+  const id = knockUserId(userId);
+  if (on === null) return knock.users.unsetPreferences(id, "default");
+  const existing = await knock.users.getPreferences(id, "default").catch(() => null);
+  return knock.users.setPreferences(id, "default", {
+    categories: {
+      ...(existing?.categories ?? {}),
+      ratings: { channel_types: { in_app_feed: on } },
+    },
+  });
 }
