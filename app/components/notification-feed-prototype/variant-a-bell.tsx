@@ -1,6 +1,8 @@
 // PROTOTYPE — Variant A: bell in the sidebar header, popover feed.
-// Badge = unseen count. Opening the popover marks everything seen (badge clears),
-// rows stay "unread" (dot + tint) until clicked. Click = mark read + navigate + close.
+// Badge = unread count: it stays until each Notification is clicked or
+// "Mark all as read" is pressed. Opening the popover still marks everything
+// seen in Knock (bookkeeping only; the badge doesn't use it).
+// Click = mark read + navigate + close.
 import { Bell, CheckCheck } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
@@ -52,7 +54,7 @@ export function VariantABell() {
     if (item.data?.url) navigate(item.data.url);
   }
 
-  const unseen = metadata.unseen_count;
+  const unread = metadata.unread_count;
 
   return (
     <div ref={ref} className="relative">
@@ -62,9 +64,9 @@ export function VariantABell() {
         className="relative rounded-md p-1.5 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
       >
         <Bell className="size-5" />
-        {unseen > 0 && (
+        {unread > 0 && (
           <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white">
-            {unseen > 9 ? "9+" : unseen}
+            {unread > 9 ? "9+" : unread}
           </span>
         )}
       </button>
