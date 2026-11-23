@@ -8,10 +8,11 @@ ticket out of a queue.
 
 Read CODING_STANDARDS.md.
 
-- Behaviour goes in a deep module under app/modules/, behind an entry point a
-  test can call, never inline in a loader.
-- Tests ship in this ticket. End with more passing tests than you started
-  with.
+- Make the smallest change that meets the ticket. Logic (rules that branch,
+  data, permissions) goes in a deep module under app/modules/, behind an
+  entry point a test can call, never inline in a loader. Styling and markup
+  stay in the route: see "When to make a module" in app/modules/README.md.
+- When you add logic, its tests ship in this ticket.
 - The review workflow checks you against the ticket's "Done when". Reread it
   before you stop.
 - `npm run build` must pass too.
@@ -24,7 +25,8 @@ Read CODING_STANDARDS.md.
   request.
 - Leave `.github/` untouched.
 - When the change shows in the UI, save a before and an after screenshot as
-  PNGs in /tmp/evidence/.
+  PNGs in /tmp/evidence/, then judge the after against the ticket's words,
+  as "Judging how it looks" in docs/agents/agent-browser.md describes.
 
 **Leave `purchases.created_at` and `courses.instructor_id` unindexed**, on
 purpose. If your ticket's report is slow, say so in your summary and leave it

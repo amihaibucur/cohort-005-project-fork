@@ -21,12 +21,17 @@ Write your verdict on the branch, after your fixes, to /tmp/review-verdict.md:
     (its commit) or left (its file and line), citing the rule by heading.
 
     ## Spec: PASS | CHANGES REQUESTED
-    One line of reasoning, then the findings, fixed or left.
+    One line of reasoning, then the findings, fixed or left. For a change
+    that shows in the UI, end with a **Feel:** line: does the screenshot
+    evoke what the ticket's words describe?
 
     ## Rules this review wanted and could not find
     Anything you wanted to fail the change for that no standard covers.
     The retro reads this list.
 
-When the change shows in the UI, save screenshots as PNGs in /tmp/evidence/.
+When the change shows in the UI, save screenshots as PNGs in /tmp/evidence/,
+and judge them as "Judging how it looks" in docs/agents/agent-browser.md
+describes. A look that falls short of the ticket's words is a Spec finding:
+fix it like any other.
 Reference each in the verdict by its absolute path, e.g.
 `![after](/tmp/evidence/after.png)`. The workflow uploads them.

@@ -162,6 +162,15 @@ jobs:
         if: steps.batch.outputs.numbers != '[]'
         run: npm install -g @anthropic-ai/claude-code
 
+      - name: Install agent-browser
+        if: steps.batch.outputs.numbers != '[]'
+        # The agents screenshot UI changes and read the DOM with it. Installed
+        # here, so no agent spends its run downloading a browser.
+        # See docs/agents/agent-browser.md.
+        run: |
+          npm install -g agent-browser@0.43.0
+          agent-browser install --with-deps
+
       - name: Explore
         if: steps.batch.outputs.numbers != '[]'
         env:

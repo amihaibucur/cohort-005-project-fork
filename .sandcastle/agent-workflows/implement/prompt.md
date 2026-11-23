@@ -6,10 +6,11 @@ open any code. Build the ticket, and only the ticket.
 
 Read CODING_STANDARDS.md.
 
-- Behaviour goes in a deep module under app/modules/, behind an entry point a
-  test can call, never inline in a loader.
-- Ship tests with the code. End with more passing tests than you started
-  with, and none failing.
+- Make the smallest change that meets the ticket. Logic (rules that branch,
+  data, permissions) goes in a deep module under app/modules/, behind an
+  entry point a test can call, never inline in a loader. Styling and markup
+  stay in the route: see "When to make a module" in app/modules/README.md.
+- When you add logic, ship tests with it, and leave none failing.
 - `npm run build` must pass too.
 - Commit with `git commit` on the current branch. When the pre-commit hook
   rejects a commit, fix the work and commit again. The hook stays as it is:
@@ -19,7 +20,8 @@ Read CODING_STANDARDS.md.
   pushes and opens the pull request.
 - Leave `.github/` untouched.
 - When the change shows in the UI, save a before and an after screenshot as
-  PNGs in /tmp/evidence/.
+  PNGs in /tmp/evidence/, then judge the after against the ticket's words,
+  as "Judging how it looks" in docs/agents/agent-browser.md describes.
 
 Write /tmp/pr-body.md in the voice of the `pr` skill: what the ticket asked
 for, what you built, what you deliberately left out. In its Evidence section,

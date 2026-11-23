@@ -13,6 +13,12 @@ app/modules/
 
 Copy `example/` to start a new module.
 
+## When to make a module
+
+A module earns its place by holding **logic**: rules that branch, data it owns, permissions, anything a test should pin down. Styling and markup stay in the route or component that renders them. A background colour, a class name, a layout tweak is a direct edit to the route, with no module.
+
+Reach for the smallest change that meets the ticket, and grow it into a module when the logic arrives.
+
 **Import only through a module's entry points (its root files).** Anything in a subfolder is private, whatever the folder is called.
 
 **Don't write barrel files.** Expose several small entry points instead of re-exporting a whole subtree through one `index.ts`.

@@ -12,11 +12,53 @@ npm install -g agent-browser
 agent-browser install
 ```
 
-## Asking your own question
+## Starting and stopping the app
 
-Start the app with `npm run dev` first. The examples below use
-`http://localhost:5173`, the dev server's default address — if `npm run dev`
-printed a different one, use that.
+Start the dev server in the background, keep its PID, and wait until it
+answers:
+
+```bash
+npm run dev > /tmp/dev.log 2>&1 & echo $! > /tmp/dev.pid
+until curl -s -o /dev/null http://localhost:5173/; do sleep 1; done
+```
+
+Stop it by that PID, in a command of its own:
+
+```bash
+kill $(cat /tmp/dev.pid)
+```
+
+`pkill -f "react-router dev"` matches the shell running the `pkill` itself,
+and kills everything after it in the same command.
+
+The examples below use `http://localhost:5173`, the dev server's default
+address. If `/tmp/dev.log` shows a different one, use that.
+
+## Signing in as a user
+
+Pages behind the app layout answer 401 until a user is in the session. The
+seed gives fixed IDs: `1` is an admin, `2` an instructor, `5` a student. Sign
+in with one request, then open the page:
+
+```bash
+agent-browser open http://localhost:5173/
+agent-browser eval "fetch('/api/switch-user', {method: 'POST', body: new URLSearchParams({userId: '5'})}).then(r => r.status)"
+agent-browser open http://localhost:5173/dashboard
+```
+
+## Judging how it looks
+
+A screenshot is evidence for a person, and for you. Open your "after"
+screenshot with the Read tool and look at it. When the ticket uses words of
+feel or mood ("like the sky", "calm", "playful"), judge the screenshot against
+those words, not only against the DOM: would someone looking at it think of
+the thing the ticket names? A sky is layered, luminous and deep; a flat
+pale-blue fill is a colour, not a sky.
+
+For a mood ticket, try two or three options, screenshot each, keep the one
+that best evokes the words, and show the others in the PR as alternatives.
+
+## Asking your own question
 
 A screenshot is pixels. To verify a fix you need a yes or a no, so read the
 DOM:
