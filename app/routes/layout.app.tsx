@@ -1,4 +1,5 @@
-import { Outlet } from "react-router";
+import { Outlet, useLocation } from "react-router";
+import { backdropClassName } from "~/modules/backdrop";
 import type { Route } from "./+types/layout.app";
 import { Sidebar } from "~/components/sidebar";
 import { DevUI } from "~/components/dev-ui";
@@ -238,6 +239,7 @@ async function getFeedCredentials(userId: number) {
 }
 
 export default function AppLayout({ loaderData }: Route.ComponentProps) {
+  const { pathname } = useLocation();
   const {
     users,
     currentUser,
@@ -257,7 +259,9 @@ export default function AppLayout({ loaderData }: Route.ComponentProps) {
           recentCourses={recentCourses}
           isTeamAdmin={userIsTeamAdmin}
         />
-        <main className="flex-1 overflow-y-auto">
+        <main
+          className={`flex-1 overflow-y-auto ${backdropClassName(pathname)}`}
+        >
           <Outlet />
         </main>
         <DevUI

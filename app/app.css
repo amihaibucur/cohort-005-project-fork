@@ -85,6 +85,8 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  --sky-top: oklch(0.83 0.09 230);
+  --sky-bottom: oklch(0.96 0.03 220);
 }
 
 .dark {
@@ -119,6 +121,19 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+  --sky-top: oklch(0.2 0.06 260);
+  --sky-bottom: oklch(0.3 0.07 245);
+}
+
+/* The sky backdrop of the homepage and the dashboard; see app/modules/backdrop. */
+@utility bg-sky {
+  background-color: var(--sky-bottom);
+  background-image: linear-gradient(
+    to bottom,
+    var(--sky-top),
+    var(--sky-bottom)
+  );
+  background-attachment: fixed;
 }
 
 @layer base {
