@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+import { Link, useLocation } from "react-router";
 import { useState, useEffect } from "react";
 import type { Route } from "./+types/home";
 import { Button } from "~/components/ui/button";
@@ -25,6 +25,7 @@ import { getCountryTierInfo, COUNTRIES } from "~/lib/ppp";
 import { eq, like, and, or, sql } from "drizzle-orm";
 import { db } from "~/db";
 import { courses, categories, users, modules, lessons } from "~/db/schema";
+import { backdropClassName } from "~/modules/backdrop";
 
 function getAllUsers() {
   return db.select().from(users).all();
@@ -163,6 +164,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export default function Home({ loaderData }: Route.ComponentProps) {
+  const { pathname } = useLocation();
   const {
     featuredCourses,
     totalCourses,
@@ -189,7 +191,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className={`min-h-screen ${backdropClassName(pathname)}`}>
       <header className="border-b border-border">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
           <Link to="/" className="text-xl font-bold tracking-tight">
