@@ -125,7 +125,7 @@
   --sky-bottom: oklch(0.3 0.07 245);
 }
 
-/* The sky backdrop of the homepage and the dashboard; see app/modules/backdrop. */
+/* Which pages get this is decided in app/modules/backdrop. */
 @utility bg-sky {
   background-color: var(--sky-bottom);
   background-image: linear-gradient(
