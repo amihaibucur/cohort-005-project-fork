@@ -107,6 +107,14 @@ const [items, setItems] = useState(rows);
 const count = items.length;
 ```
 
+## The smallest change that meets the ticket
+
+Every module, helper, abstraction and option in the diff answers something
+the ticket asked for. A pure-presentation change (a colour, a class name, a
+layout tweak) is a direct edit to the route or component, with no new module.
+See "When to make a module" in
+[app/modules/README.md](./app/modules/README.md#when-to-make-a-module).
+
 ## A comment explains why
 
 Name and extract until a comment is unnecessary. A comment earns its place
